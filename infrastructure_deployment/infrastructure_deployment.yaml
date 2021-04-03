@@ -1,0 +1,15 @@
+# Import all the pre-defined templates 
+imports:
+- path: cloud_storage_template.py
+
+# Build the resources
+resources:
+# This GCP Cloud Storage Bucket will be part of the data lake
+# to save the data files for all twitter related files 
+- name: abar_ipl_twitter_feed
+  type: cloud_storage_template.py
+  'properties': {
+    'location': 'us-east1',
+    'locationType': 'region',
+    'storageClass':'STANDARD'
+  }
