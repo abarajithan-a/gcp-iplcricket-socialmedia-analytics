@@ -12,6 +12,7 @@ bucket_name = "abar_ipl_twitter_feed"
 bearer_token = "AAAAAAAAAAAAAAAAAAAAAAKvOAEAAAAAEUtdBuFpB%2FA5YFYfXkyGfAuSYCE%3D6kyefTwcw8HB0PCz2mgVouwjgGIqInXxoh8lOIB6IGaH7Dhq0F"
 
 ipl_teams_twitter_handles = {
+	"IPL": "IPL",
 	"CSK": "ChennaiIPL",
   	"MI": "mipaltan",
   	"RCB": "RCBTweets",
@@ -28,23 +29,25 @@ def pull_team_tweets(request):
 	folder = "ipl_teams_tweets/" + date.today().strftime("%Y-%m-%d")
 
 	# Set date fields and parameters
-	now=datetime.now(tz=gettz('Asia/Kolkata')).replace(tzinfo=None).replace(microsecond=0)	
+	now=datetime.now(tz=gettz('Asia/Kolkata')).replace(tzinfo=None).replace(microsecond=0)		
 
 	#Round down to the nearest hour
 	delta = timedelta(hours=1)
 	now = datetime.min + math.floor((now - datetime.min) / delta) * delta
+
+	# 2 hour tweet search window going back 3 days
 	start_time = now - timedelta(days=3)
-	start_time = datetime.min + math.floor((start_time - datetime.min) / delta) * delta
-	end_time = start_time + delta	
+	start_time = datetime.min + math.floor((start_time - datetime.min) / delta) * delta	
+	end_time = start_time + timedelta(hours=2)		
 
 	#Convert to ISO format
 	start_time = start_time.isoformat()
-	end_time = end_time.isoformat()		
+	end_time = end_time.isoformat()			
 
 	start_time_param = "start_time={}Z".format(start_time)
 	end_time_param = "end_time={}Z".format(end_time)
 
-	tweet_fields = "max_results=10&tweet.fields=public_metrics,geo,created_at,entities"	
+	tweet_fields = "max_results=100&tweet.fields=public_metrics,geo,created_at,entities"	
 
 	for team_name, team_handle in ipl_teams_twitter_handles.items():	
 
