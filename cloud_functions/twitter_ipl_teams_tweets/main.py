@@ -1,6 +1,5 @@
 import json
 import sys
-import pandas as pd
 from datetime import date, datetime, timedelta
 from dateutil.tz import gettz
 import requests
@@ -12,15 +11,15 @@ bucket_name = "abar_ipl_twitter_feed"
 bearer_token = "AAAAAAAAAAAAAAAAAAAAAAKvOAEAAAAAEUtdBuFpB%2FA5YFYfXkyGfAuSYCE%3D6kyefTwcw8HB0PCz2mgVouwjgGIqInXxoh8lOIB6IGaH7Dhq0F"
 
 ipl_teams_twitter_handles = {
-	"IPL": "IPL",
-	"CSK": "ChennaiIPL",
-  	"MI": "mipaltan",
-  	"RCB": "RCBTweets",
-  	"SRH": "SunRisers",
-  	"DC": "DelhiCapitals",
-  	"KKR": "KKRiders",
-  	"RR": "rajasthanroyals",
-  	"KXIP": "PunjabKingsIPL"
+	"IPL" : "15639696",
+	"CSK": "117407834",
+  	"MI": "106345557",
+  	"RCB": "70931004",
+  	"SRH": "989137039",
+  	"DC": "176888549",
+  	"KKR": "23592970",
+  	"RR": "17082958",
+  	"KXIP": "30631766"
 }
 
 def pull_team_tweets(request):
@@ -47,14 +46,13 @@ def pull_team_tweets(request):
 	start_time_param = "start_time={}Z".format(start_time)
 	end_time_param = "end_time={}Z".format(end_time)
 
-	tweet_fields = "max_results=100&tweet.fields=public_metrics,geo,created_at,entities"	
+	tweet_fields = "tweet.fields=public_metrics,geo,created_at,entities"
+	max_results_field = "max_results=100"	
 
-	for team_name, team_handle in ipl_teams_twitter_handles.items():	
+	for team_name, team_twitter_id in ipl_teams_twitter_handles.items():
 
-		query = "from:{} -is:retweet".format(team_handle)						
-
-		url = "https://api.twitter.com/2/tweets/search/recent?query={}&{}&{}&{}".format(
-		    query, tweet_fields, start_time_param, end_time_param
+		url = "https://api.twitter.com/2/users/{}/tweets?{}&{}&{}&{}".format(
+		    team_twitter_id, max_results_field, tweet_fields, start_time_param, end_time_param
 		)
 
 		headers = {"Authorization": "Bearer {}".format(bearer_token)}	
