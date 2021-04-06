@@ -24,35 +24,39 @@ ipl_teams_twitter_handles = {
 
 def pull_team_tweets(request):
 	# Pulls the tweets from official IPL team handles for every 1 hour going back 3 days
-	# Set the date folder for the bucket
-	folder = "ipl_teams_tweets/" + date.today().strftime("%Y-%m-%d")
 
 	# Set date fields and parameters
-	now=datetime.now(tz=gettz('Asia/Kolkata')).replace(tzinfo=None).replace(microsecond=0)		
+	now = datetime.now(tz=gettz('Asia/Kolkata')).replace(tzinfo=None).replace(microsecond=0)
+	now_utc = datetime.utcnow().replace(tzinfo=None).replace(microsecond=0)	
 
 	#Round down to the nearest hour
 	delta = timedelta(hours=1)
-	now = datetime.min + math.floor((now - datetime.min) / delta) * delta
+	now_down = datetime.min + math.floor((now - datetime.min) / delta) * delta
+	offset = (now-now_down).total_seconds()
+	now_utc = now_utc - timedelta(seconds=offset)
+	now = now_down	
 
 	# 2 hour tweet search window going back 3 days
 	start_time = now - timedelta(days=3)
-	start_time = datetime.min + math.floor((start_time - datetime.min) / delta) * delta	
-	end_time = start_time + timedelta(hours=2)		
+	start_time_utc = now_utc - timedelta(days=3)
+	end_time_utc = start_time_utc + timedelta(hours=2)	
+
+	# Set the date folder for the bucket
+	folder = "ipl_teams_tweets/" + start_time.strftime("%Y-%m-%d")	
 
 	#Convert to ISO format
 	start_time = start_time.isoformat()
-	end_time = end_time.isoformat()			
+	now = now.isoformat()				
+	start_time_param_utc = "start_time={}Z".format(start_time_utc.isoformat())
+	end_time_param_utc = "end_time={}Z".format(end_time_utc.isoformat())
 
-	start_time_param = "start_time={}Z".format(start_time)
-	end_time_param = "end_time={}Z".format(end_time)
-
-	tweet_fields = "tweet.fields=public_metrics,geo,created_at,entities"
+	tweet_fields = "tweet.fields=public_metrics,geo,created_at,entities,author_id,lang"
 	max_results_field = "max_results=100"	
 
 	for team_name, team_twitter_id in ipl_teams_twitter_handles.items():
 
 		url = "https://api.twitter.com/2/users/{}/tweets?{}&{}&{}&{}".format(
-		    team_twitter_id, max_results_field, tweet_fields, start_time_param, end_time_param
+		    team_twitter_id, max_results_field, tweet_fields, start_time_param_utc, end_time_param_utc
 		)
 
 		headers = {"Authorization": "Bearer {}".format(bearer_token)}	
@@ -62,14 +66,13 @@ def pull_team_tweets(request):
 		if response.status_code != 200:
 			err_message = team_name + ' tweet search failed for ' + start_time
 			raise RuntimeError(err_message, response.text)
-		else:
-			print(team_name + ' tweets search for ' + start_time + ' pulled successfully!')			
+		else:		
 			json_response = response.json()			
 
 			# Serializing json 
 			json_object = json.dumps(json_response, indent=4, sort_keys=True)		
 
-			file_name = team_name + '_twitter_' + now.isoformat() + '.json'
+			file_name = team_name + '_twitter_' + now + '.json'
 			temp_file_path = '/tmp/{}'.format(file_name)		
 
 			with open(temp_file_path, "w") as jsonfile:
@@ -82,6 +85,4 @@ def pull_team_tweets(request):
 			# set Blob
 			blob = storage.Blob(folder + '/' + file_name, bucket)
 			# upload the file to GCS
-			blob.upload_from_filename(temp_file_path)
-
-			print(team_name + ' tweets for ' + start_time + ' saved to GCP Cloud Storage successfully!')		
+			blob.upload_from_filename(temp_file_path)		

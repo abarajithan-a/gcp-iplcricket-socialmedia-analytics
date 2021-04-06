@@ -17,3 +17,13 @@ gcloud functions deploy twitter_trends \
 	--memory=128MB \
 	--timeout=540s \
 	--allow-unauthenticated
+
+gcloud functions deploy twitter_users_tweets \
+	--source=../cloud_functions/twitter_users_tweets \
+	--entry-point=search_user_tweets \
+	--trigger-http \
+	--region=us-east1 \
+	--runtime=python37 \
+	--memory=128MB \
+	--timeout=540s \
+	--allow-unauthenticated
