@@ -13,10 +13,11 @@ def pull_twitter_trends(request):
 	# Pulls the current worldwide top 50 trending hashtags
 	# Set date fields and parameters
 	now=datetime.now(tz=gettz('Asia/Kolkata')).replace(tzinfo=None).replace(microsecond=0)
-	now=now.isoformat()
 
 	# Set the date folder for the bucket
-	folder = "twitter_trends/" + date.today().strftime("%Y-%m-%d")					
+	folder = "twitter_trends/" + now.strftime("%Y-%m-%d")
+
+	now=now.isoformat()					
 
 	# Worldwide trends with id = 1
 	url = "https://api.twitter.com/1.1/trends/place.json?id=1"
@@ -28,8 +29,7 @@ def pull_twitter_trends(request):
 	if response.status_code != 200:
 		err_message = 'Worldwide trends pull failed for ' + now
 		raise RuntimeError(err_message, response.text)
-	else:
-		print('Worldwide top 50 trends at ' + now + ' pulled successfully!')			
+	else:		
 		json_response = response.json()			
 
 		# Serializing json 
