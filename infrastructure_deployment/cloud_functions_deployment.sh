@@ -27,3 +27,13 @@ gcloud functions deploy twitter_users_tweets \
 	--memory=128MB \
 	--timeout=540s \
 	--allow-unauthenticated
+
+gcloud functions deploy twitter_ipl_metadata \
+	--source=../cloud_functions/twitter_ipl_metadata \
+	--entry-point=pull_user_metadata \
+	--trigger-http \
+	--region=us-east1 \
+	--runtime=python37 \
+	--memory=128MB \
+	--timeout=540s \
+	--allow-unauthenticated
