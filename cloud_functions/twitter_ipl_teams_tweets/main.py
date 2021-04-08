@@ -23,7 +23,7 @@ ipl_teams_twitter_handles = {
 }
 
 def pull_team_tweets(request):
-	# Pulls the tweets from official IPL team handles for every 1 hour going back 3 days
+	# Pulls the tweets from official IPL team handles for every 1 hour going back 1 day
 
 	# Set date fields and parameters
 	now = datetime.now(tz=gettz('Asia/Kolkata')).replace(tzinfo=None).replace(microsecond=0)
@@ -36,9 +36,9 @@ def pull_team_tweets(request):
 	now_utc = now_utc - timedelta(seconds=offset)
 	now = now_down	
 
-	# 2 hour tweet search window going back 3 days
-	start_time = now - timedelta(days=3)
-	start_time_utc = now_utc - timedelta(days=3)
+	# 2 hour tweet search window going back 1 day
+	start_time = now - timedelta(days=1)
+	start_time_utc = now_utc - timedelta(days=1)
 	end_time_utc = start_time_utc + timedelta(hours=2)	
 
 	# Set the date folder for the bucket
@@ -50,13 +50,17 @@ def pull_team_tweets(request):
 	start_time_param_utc = "start_time={}Z".format(start_time_utc.isoformat())
 	end_time_param_utc = "end_time={}Z".format(end_time_utc.isoformat())
 
-	tweet_fields = "tweet.fields=public_metrics,geo,created_at,entities,author_id,lang"
-	max_results_field = "max_results=100"	
+	tweet_fields = "tweet.fields=attachments,public_metrics,geo,created_at,entities,author_id,lang,source"
+	max_results_field = "max_results=100"
+	exclude_field = "exclude=retweets"
+	expansions_fields = "expansions=attachments.media_keys"
+	media_fields = "media.fields=duration_ms,public_metrics"	
 
 	for team_name, team_twitter_id in ipl_teams_twitter_handles.items():
 
-		url = "https://api.twitter.com/2/users/{}/tweets?{}&{}&{}&{}".format(
-		    team_twitter_id, max_results_field, tweet_fields, start_time_param_utc, end_time_param_utc
+		url = "https://api.twitter.com/2/users/{}/tweets?{}&{}&{}&{}&{}&{}&{}".format(
+		    team_twitter_id, max_results_field, tweet_fields, start_time_param_utc, end_time_param_utc,
+		    	exclude_field, expansions_fields, media_fields
 		)
 
 		headers = {"Authorization": "Bearer {}".format(bearer_token)}	

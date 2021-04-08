@@ -27,7 +27,7 @@ def pull_twitter_trends(request):
 	response = requests.request("GET", url, headers=headers)	
 
 	if response.status_code != 200:
-		err_message = 'Worldwide trends pull failed for ' + now
+		err_message = 'Worldwide twitter trends pull failed for ' + now
 		raise RuntimeError(err_message, response.text)
 	else:		
 		json_response = response.json()			
@@ -50,4 +50,4 @@ def pull_twitter_trends(request):
 		# upload the file to GCS
 		blob.upload_from_filename(temp_file_path)
 
-		print('Worldwide top 50 trends at ' + now + ' saved to GCP Cloud Storage successfully!')		
+		print('Worldwide twitter trends at ' + now + ' saved to GCP Cloud Storage successfully!')		

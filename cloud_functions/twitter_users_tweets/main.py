@@ -127,7 +127,7 @@ def user_tweets_by_keywords(now, start_time, start_time_param, end_time_param):
 	folder = "ipl_user_tweets/" + start_time.strftime("%Y-%m-%d")
 
 	# Set all the api parameters
-	tweet_fields = "tweet.fields=public_metrics,geo,created_at,entities,author_id,lang"
+	tweet_fields = "tweet.fields=public_metrics,geo,created_at,entities,author_id,lang,source"
 	max_results_field = "max_results=100"
 	expansions_fields = "expansions=geo.place_id"
 	place_fields = "place.fields=contained_within,country,country_code,full_name,geo,id,name,place_type"
@@ -163,9 +163,9 @@ def search_user_tweets(request):
 	now_utc = now_utc - timedelta(seconds=offset)
 	now = now_down	
 
-	# 15 min tweet search window going back 3 days
-	start_time = now - timedelta(days=3)
-	start_time_utc = now_utc - timedelta(days=3)
+	# 15 min tweet search window going back 1 day
+	start_time = now - timedelta(days=1)
+	start_time_utc = now_utc - timedelta(days=1)
 	end_time_utc = start_time_utc + timedelta(minutes=15)	
 
 	#Convert to ISO format
