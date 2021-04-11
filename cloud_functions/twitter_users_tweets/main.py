@@ -82,22 +82,26 @@ def user_tweets_by_matches(now, start_time, start_time_param, end_time_param):
 	list_ipl_teams = list({x for x in ipl_teams_twitter_ids if x not in 'IPL'})
 	# Get all teh matchup permutations with length 2
 	list_matchups = list(itertools.permutations(list_ipl_teams,2))
-	dict_matches = {}
+	dict_matches = {}	
 
 	# Build the matches list
 	for teams in list_matchups:
 		temp_list = list(teams)
-		temp_list.sort()
+		temp_list.sort()	
 
 		#sorted match key
-		match_key = temp_list[0] + '-'+ temp_list[1]
+		match_key = temp_list[0] + '-'+ temp_list[1]	
 
 		if match_key in dict_matches.keys():
 			existing_list = dict_matches[match_key]
 			existing_list.append(teams[0] + 'vs' + teams[1])
+			existing_list.append(teams[0] + 'v' + teams[1])
 			dict_matches.update({match_key: existing_list})
 		else:
-			dict_matches[match_key] = [teams[0] + 'vs' + teams[1]]
+			dict_matches[match_key] = [
+			    teams[0] + 'vs' + teams[1],
+			    teams[0] + 'v' + teams[1]
+			]
 	
 	# Build the twitter api seach query 
 	for key, matches in dict_matches.items():
@@ -105,7 +109,8 @@ def user_tweets_by_matches(now, start_time, start_time_param, end_time_param):
 		team1_id = ipl_teams_twitter_ids[teams[0]]
 		team2_id = ipl_teams_twitter_ids[teams[1]]
 
-		search_keywords = '(' + matches[0] + ' OR ' + matches[1] + ')'
+		search_keywords = '(' + matches[0] + ' OR ' + matches[1] + ' OR ' \
+							+ matches[2] + ' OR ' + matches[3] + ')'
 		not_team_ids = '(-from:' + team1_id + ' -from:' + team2_id + ')'
 		no_retweets = '(-is:retweet)'
 
@@ -172,6 +177,8 @@ def search_user_tweets(request):
 	now = now.isoformat()				
 	start_time_param_utc = "start_time={}Z".format(start_time_utc.isoformat())
 	end_time_param_utc = "end_time={}Z".format(end_time_utc.isoformat())
+
+	print('Pulling user tweets for 15 min window at ' + start_time.isoformat())
 
 	# Pull tweets by keywords
 	user_tweets_by_keywords(now, start_time, start_time_param_utc, end_time_param_utc)
