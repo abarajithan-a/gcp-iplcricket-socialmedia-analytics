@@ -100,7 +100,7 @@ def user_tweets_by_matches(now, start_time, start_time_param, end_time_param):
 		else:
 			dict_matches[match_key] = [
 			    teams[0] + 'vs' + teams[1],
-			    teams[0] + 'v' + teams[1],
+			    teams[0] + 'v' + teams[1]
 			]
 	
 	# Build the twitter api seach query 
