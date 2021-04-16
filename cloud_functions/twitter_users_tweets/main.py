@@ -7,10 +7,11 @@ import urllib.parse
 import math
 import itertools
 from google.cloud import storage
+from google.cloud import secretmanager
 
 bucket_name = "abar_ipl_twitter_feed"
-
-bearer_token = "AAAAAAAAAAAAAAAAAAAAAAKvOAEAAAAAEUtdBuFpB%2FA5YFYfXkyGfAuSYCE%3D6kyefTwcw8HB0PCz2mgVouwjgGIqInXxoh8lOIB6IGaH7Dhq0F"
+twitter_api_secret_name = 'abar-twitter-api-bearer-token'
+gcp_project_id = 'abar-ipl-cricket'
 
 ipl_teams_twitter_ids = {
 	"IPL" : "15639696",
@@ -37,7 +38,18 @@ dict_ipl_keywords = {
 	'PBKS': ['kxip', 'punjab kings', 'SaddaPunjab']
 }
 
-def get_twitter_data(url, start_time):
+def get_bearer_token_secret():
+    # Create the Secret Manager client.
+    client = secretmanager.SecretManagerServiceClient()
+    # Build the resource name of the secret version.
+    resource_name = f"projects/{gcp_project_id}/secrets/{twitter_api_secret_name}/versions/latest"
+    # Access the secret version.
+    response = client.access_secret_version(request={"name": resource_name})
+    bearer_token = response.payload.data.decode("UTF-8")
+
+    return bearer_token
+
+def get_twitter_data(bearer_token, url, start_time):
 	headers = {"Authorization": "Bearer {}".format(bearer_token)}
 	
 	response = requests.request("GET", url, headers=headers)	
@@ -68,7 +80,7 @@ def save_json_file(folder, file_name, start_time, json_response):
 	# upload the file to GCS
 	blob.upload_from_filename(temp_file_path)
 
-def user_tweets_by_matches(now, start_time, start_time_param, end_time_param):
+def user_tweets_by_matches(bearer_token, now, start_time, start_time_param, end_time_param):
 	# Set the date folder for the bucket
 	folder = "match_hashtag_tweets/" + start_time.strftime("%Y-%m-%d")
 
@@ -123,11 +135,11 @@ def user_tweets_by_matches(now, start_time, start_time_param, end_time_param):
 	    		place_fields, user_fields, start_time_param, end_time_param
 		)
 		
-		json_response = get_twitter_data(url, start_time)
+		json_response = get_twitter_data(bearer_token, url, start_time)
 		file_name = key + '_match_hashtag_tweets_' + now + '.json'
 		save_json_file(folder, file_name, start_time, json_response)	
 
-def user_tweets_by_keywords(now, start_time, start_time_param, end_time_param):
+def user_tweets_by_keywords(bearer_token, now, start_time, start_time_param, end_time_param):
 	# Set the date folder for the bucket
 	folder = "ipl_user_tweets/" + start_time.strftime("%Y-%m-%d")
 
@@ -152,11 +164,14 @@ def user_tweets_by_keywords(now, start_time, start_time_param, end_time_param):
 	    		place_fields, user_fields, start_time_param, end_time_param
 		)
 
-		json_response = get_twitter_data(url, start_time)
+		json_response = get_twitter_data(bearer_token, url, start_time)
 		file_name = team + '_user_tweets_' + now + '.json'
 		save_json_file(folder, file_name, start_time, json_response)	
 
 def search_user_tweets(request):
+	# Get twitter api bearer token from GCP secret manager
+	bearer_token = get_bearer_token_secret()
+
 	# Set date fields and parameters
 	now = datetime.now(tz=gettz('Asia/Kolkata')).replace(tzinfo=None).replace(microsecond=0)
 	now_utc = datetime.utcnow().replace(tzinfo=None).replace(microsecond=0)	
@@ -181,7 +196,7 @@ def search_user_tweets(request):
 	print('Pulling user tweets for 15 min window at ' + start_time.isoformat())
 
 	# Pull tweets by keywords
-	user_tweets_by_keywords(now, start_time, start_time_param_utc, end_time_param_utc)
+	user_tweets_by_keywords(bearer_token, now, start_time, start_time_param_utc, end_time_param_utc)
 
 	# Pull tweets by match hashtag Eg: CSKvsMI
-	user_tweets_by_matches(now, start_time, start_time_param_utc, end_time_param_utc)		
+	user_tweets_by_matches(bearer_token, now, start_time, start_time_param_utc, end_time_param_utc)		

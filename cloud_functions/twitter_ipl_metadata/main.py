@@ -5,10 +5,11 @@ from dateutil.tz import gettz
 import requests
 import math
 from google.cloud import storage
+from google.cloud import secretmanager
 
 bucket_name = "abar_ipl_twitter_feed"
-
-bearer_token = "AAAAAAAAAAAAAAAAAAAAAAKvOAEAAAAAEUtdBuFpB%2FA5YFYfXkyGfAuSYCE%3D6kyefTwcw8HB0PCz2mgVouwjgGIqInXxoh8lOIB6IGaH7Dhq0F"
+twitter_api_secret_name = 'abar-twitter-api-bearer-token'
+gcp_project_id = 'abar-ipl-cricket'
 
 ipl_teams_twitter_handles = {
 	"IPL" : "15639696",
@@ -22,7 +23,21 @@ ipl_teams_twitter_handles = {
   	"KXIP": "30631766"
 }
 
+def get_bearer_token_secret():
+    # Create the Secret Manager client.
+    client = secretmanager.SecretManagerServiceClient()
+    # Build the resource name of the secret version.
+    resource_name = f"projects/{gcp_project_id}/secrets/{twitter_api_secret_name}/versions/latest"
+    # Access the secret version.
+    response = client.access_secret_version(request={"name": resource_name})
+    bearer_token = response.payload.data.decode("UTF-8")
+
+    return bearer_token
+
 def pull_user_metadata(request):
+	# Get twitter api bearer token from GCP secret manager
+	bearer_token = get_bearer_token_secret()
+	
 	# Pulls the metadata for official IPL team handles for every day
 	# Set date fields and parameters
 	now=datetime.now(tz=gettz('Asia/Kolkata')).replace(tzinfo=None).replace(microsecond=0)
