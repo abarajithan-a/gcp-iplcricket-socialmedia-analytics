@@ -1,6 +1,7 @@
 # Import all the pre-defined templates 
 imports:
 - path: cloud_storage_template.py
+- path: bigquery_tables_raw.py
 
 # Build the resources
 resources:
@@ -12,4 +13,22 @@ resources:
     'location': 'us-east1',
     'locationType': 'region',
     'storageClass':'STANDARD'
+  }
+
+  # This is the bigquery dataset to store the daily ingested raw data for all social media platforms
+- name: abar-bq-dataset-socialmedia-raw
+  type: bigquery.v2.dataset
+  'properties': {
+    'description': "Dataset to store the daily ingested raw data for all social media platforms",
+    'datasetReference': {
+      'datasetId': 'abar_bq_dataset_socialmedia_raw'
+    },
+    'location': 'us-east1'
+  }
+
+# This template builds all table schema definitions in the given bigquery dataset
+- name: abar-bq-tables-socialmedia-raw
+  type: bigquery_tables_raw.py
+  'properties': {
+    'datasetId': 'abar_bq_dataset_socialmedia_raw'
   }
