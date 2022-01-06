@@ -15,6 +15,7 @@ def GenerateConfig(context):
             {'name': 'author_id', 'type': 'STRING', 'mode': 'NULLABLE'},
             {'name': 'created_at', 'type': 'TIMESTAMP', 'mode': 'NULLABLE'},
             {'name': 'tweet_id', 'type': 'STRING', 'mode': 'REQUIRED'},
+            {'name': 'game', 'type': 'STRING', 'mode': 'NULLABLE'},            
             {'name': 'lang', 'type': 'STRING', 'mode': 'NULLABLE'},
             {'name': 'like_count', 'type': 'STRING', 'mode': 'NULLABLE'},
             {'name': 'quote_count', 'type': 'STRING', 'mode': 'NULLABLE'},
@@ -41,6 +42,62 @@ def GenerateConfig(context):
         }      
       }
     },
+    {
+      'name': 'daily_ingest_twitter_hashtags_raw',
+      'type': 'bigquery.v2.table',
+      'properties': {
+        'datasetId': context.properties['datasetId'],
+        'tableReference': {
+          'tableId': 'daily_ingest_twitter_hashtags_raw'
+        },
+        'type': 'TABLE',
+        'schema': {
+          'fields': [
+            {'name': 'author_id', 'type': 'STRING', 'mode': 'NULLABLE'},
+            {'name': 'created_at', 'type': 'TIMESTAMP', 'mode': 'NULLABLE'},
+            {'name': 'tweet_id', 'type': 'STRING', 'mode': 'REQUIRED'},
+            {'name': 'hashtag', 'type': 'STRING', 'mode': 'NULLABLE'},           
+            {'name': 'ingestion_timestamp', 'type': 'TIMESTAMP', 'mode': 'REQUIRED'},
+            {'name': 'file_name', 'type': 'STRING', 'mode': 'REQUIRED'}                                                                                                                                                                    
+          ]
+        },
+        'timePartitioning': {
+          'type': 'DAY',
+          'field': 'created_at'
+        },
+        'clustering': {
+          'fields': ['author_id', 'tweet_id']        
+        }      
+      }
+    },
+    {
+      'name': 'daily_ingest_twitter_mentions_raw',
+      'type': 'bigquery.v2.table',
+      'properties': {
+        'datasetId': context.properties['datasetId'],
+        'tableReference': {
+          'tableId': 'daily_ingest_twitter_mentions_raw'
+        },
+        'type': 'TABLE',
+        'schema': {
+          'fields': [
+            {'name': 'author_id', 'type': 'STRING', 'mode': 'NULLABLE'},
+            {'name': 'created_at', 'type': 'TIMESTAMP', 'mode': 'NULLABLE'},
+            {'name': 'tweet_id', 'type': 'STRING', 'mode': 'REQUIRED'},
+            {'name': 'mention', 'type': 'STRING', 'mode': 'NULLABLE'},           
+            {'name': 'ingestion_timestamp', 'type': 'TIMESTAMP', 'mode': 'REQUIRED'},
+            {'name': 'file_name', 'type': 'STRING', 'mode': 'REQUIRED'}                                                                                                                                                                    
+          ]
+        },
+        'timePartitioning': {
+          'type': 'DAY',
+          'field': 'created_at'
+        },
+        'clustering': {
+          'fields': ['author_id', 'tweet_id']         
+        }      
+      }
+    },    
     {
       'name': 'daily_ingest_twitter_trends_raw',
       'type': 'bigquery.v2.table',
