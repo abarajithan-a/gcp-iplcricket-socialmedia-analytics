@@ -20,7 +20,9 @@ ipl_teams_twitter_handles = {
   	"DC": "176888549",
   	"KKR": "23592970",
   	"RR": "17082958",
-  	"KXIP": "30631766"
+  	"PBKS": "30631766",
+  	"LSG": "4824087681",
+  	"GT": "1476438846988427265"
 }
 
 def get_bearer_token_secret():
