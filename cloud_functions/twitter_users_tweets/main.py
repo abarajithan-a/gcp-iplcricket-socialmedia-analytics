@@ -22,7 +22,9 @@ ipl_teams_twitter_ids = {
   	"DC": "176888549",
   	"KKR": "23592970",
   	"RR": "17082958",
-  	"PBKS": "30631766"
+  	"PBKS": "30631766",
+  	"LSG": "4824087681",
+  	"GT": "1476438846988427265"
 }
 
 # Dictionary to store all keywords related to IPL teams and the organization
@@ -35,7 +37,9 @@ dict_ipl_keywords = {
 	'DC': ['delhi capitals', 'YehHaiNayiDilli'],
 	'KKR': ['kkr', 'Kolkata Knight Riders', 'KKRHaiTaiyaar', 'KorboLorboJeetbo'],
 	'RR': ['Rajasthan Royals', 'HallaBol'],
-	'PBKS': ['kxip', 'punjab kings', 'SaddaPunjab']
+	'PBKS': ['pbks', 'punjab kings', 'SaddaPunjab'],
+	'LSG': ['lsg', 'lucknow super giants', 'AbApniBaari'],
+	'GT': ['gujarat titans', 'AavaDe']	
 }
 
 def get_bearer_token_secret():
