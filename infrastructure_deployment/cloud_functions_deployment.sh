@@ -37,3 +37,13 @@ gcloud functions deploy twitter_ipl_metadata \
 	--memory=128MB \
 	--timeout=540s \
 	--allow-unauthenticated
+
+gcloud functions deploy generate_tweets_parquet \
+	--source=../cloud_functions/generate_tweets_parquet \
+	--entry-point=generate_parquet_files \
+	--trigger-http \
+	--region=us-east1 \
+	--runtime=python37 \
+	--memory=512MB \
+	--timeout=540s \
+	--allow-unauthenticated
