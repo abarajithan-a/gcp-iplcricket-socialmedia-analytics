@@ -1,0 +1,8 @@
+google-cloud
+google-cloud-storage
+python-dateutil
+vaderSentiment
+dask
+pyarrow
+pandas
+gcsfs
