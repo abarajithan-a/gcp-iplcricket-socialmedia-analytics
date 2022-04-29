@@ -5,7 +5,7 @@ Social media data analytics related to Indian Premier League(IPL) - Cricket Leag
 1. An account in Google Cloud Platform(GCP) should exist.
 2. Latest version of Google Cloud SDK needs to be installed in the local machine.
 3. Google Cloud SDK needs to be initalized and a default project,region,zone attributes should have been set.
-4. Python version 3.8.x
+4. Python version 3.7.x
 5. All the required Google Component APIs should be enabled from the console under *Google Cloud Platform -> APIs & Services*
 
 **Cloud Infrastructure Deployment:**  
