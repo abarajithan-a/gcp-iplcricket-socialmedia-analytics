@@ -161,6 +161,72 @@ def generate_dask_raw_tweets_parquet(df, ingestion_date):
 
     print('Parquet - ' + parquet_file_name + ' for partition ' + ingestion_date + ' loaded into GCS successfully!')
 
+def generate_dask_raw_hashtags_parquet(df, ingestion_date):
+    col_list = ['author_id', 'created_at', 'tweet_id', 'hashtags', 'ingestion_timestamp', 
+                    'file_name', 'ingestion_date']
+    partition_list = ['ingestion_date']
+
+    df1 = df[col_list].copy()
+    df1 = df1.explode('hashtags').reset_index(drop=True)
+    df1 = df1.join(pd.json_normalize(df1['hashtags']))
+    df1.drop(columns=['hashtags', 'start', 'end'], inplace=True)
+    df1.rename(columns={'tag': 'hashtag'}, inplace=True)
+
+    ddf = dd.from_pandas(df1, npartitions=10)
+    ddf = ddf.persist()
+
+    parquet_file_name = 'tweet_hashtags'
+    target_gcs_folder = 'twitter_parquets'
+
+    parquet_folder_exists = False
+
+    for blob in all_blobs:
+        if 'tweet_hashtags.parquet' in blob.name and (('ingestion_date=' + ingestion_date) in blob.name):
+            parquet_folder_exists = True
+            dd.to_parquet(ddf, 'gs://{}/{}/{}.parquet'.format(bucket_name, target_gcs_folder, parquet_file_name), 
+                engine='pyarrow', write_index=False, append=True, partition_on=partition_list)
+            break
+
+    if not parquet_folder_exists:
+        dd.to_parquet(ddf, 'gs://{}/{}/{}.parquet'.format(bucket_name, target_gcs_folder, parquet_file_name), 
+            engine='pyarrow', write_index=False, append=False, partition_on=partition_list)
+
+    print('Parquet - ' + parquet_file_name + ' for partition ' + ingestion_date + ' loaded into GCS successfully!')
+    del df1
+
+def generate_dask_raw_mentions_parquet(df, ingestion_date):
+    col_list = ['author_id', 'created_at', 'tweet_id', 'mentions', 'ingestion_timestamp', 
+                    'file_name', 'ingestion_date']
+    partition_list = ['ingestion_date']
+
+    df1 = df[col_list].copy()
+    df1 = df1.explode('mentions').reset_index(drop=True)
+    df1 = df1.join(pd.json_normalize(df1['mentions']))
+    df1.drop(columns=['mentions', 'start', 'end', 'id'], inplace=True)
+    df1.rename(columns={'username': 'mention'}, inplace=True)
+
+    ddf = dd.from_pandas(df1, npartitions=10)
+    ddf = ddf.persist()
+
+    parquet_file_name = 'tweet_mentions'
+    target_gcs_folder = 'twitter_parquets'
+
+    parquet_folder_exists = False
+
+    for blob in all_blobs:
+        if 'tweet_mentions.parquet' in blob.name and (('ingestion_date=' + ingestion_date) in blob.name):
+            parquet_folder_exists = True
+            dd.to_parquet(ddf, 'gs://{}/{}/{}.parquet'.format(bucket_name, target_gcs_folder, parquet_file_name), 
+                engine='pyarrow', write_index=False, append=True, partition_on=partition_list)
+            break
+
+    if not parquet_folder_exists:
+        dd.to_parquet(ddf, 'gs://{}/{}/{}.parquet'.format(bucket_name, target_gcs_folder, parquet_file_name), 
+            engine='pyarrow', write_index=False, append=False, partition_on=partition_list)
+
+    print('Parquet - ' + parquet_file_name + ' for partition ' + ingestion_date + ' loaded into GCS successfully!')
+    del df1
+
 def tweets_sentiment_parquet(df):
     drop_df_columns(df)
     rename_df_columns(df)
@@ -172,8 +238,14 @@ def tweets_sentiment_parquet(df):
     ingestion_date = datetime.datetime.now().strftime("%Y-%m-%d")
     add_df_columns(df, ingestion_date)
 
-    #write to parquet files
+    #write to tweets parquet files
     generate_dask_raw_tweets_parquet(df, ingestion_date)
+
+    #write to tweet hashtags parquet files
+    generate_dask_raw_hashtags_parquet(df, ingestion_date)
+
+    #write to tweet mentions parquet files
+    generate_dask_raw_mentions_parquet(df, ingestion_date)
 
 def generate_parquet_files(request):
     # get the list of user tweet files to be processed
